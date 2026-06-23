@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LaTeX Analytics CITG — Usage statistics, project metrics, and infrastructure monitoring for the collaborative LaTeX platform.">
+    <title>LaTeX Analytics — CITG</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar" id="navbar">
+    <a href="#" class="navbar__brand">
+        <img src="/static/assets/isrologo.svg" alt="ISRO" class="navbar__brand-logo">
+        LaTeX Analytics CITG
+        <span class="data-source-badge" id="data-source-badge">Checking...</span>
+    </a>
+
+    <div class="navbar__links">
+        <a href="#section-overview" class="navbar__link active" data-section="section-overview">Overview</a>
+        <a href="#section-usage" class="navbar__link" data-section="section-usage">Usage</a>
+        <a href="#section-projects" class="navbar__link" data-section="section-projects">Projects</a>
+        <a href="#section-storage" class="navbar__link" data-section="section-storage">Storage</a>
+        <a href="#section-systems" class="navbar__link" data-section="section-systems">Systems</a>
+    </div>
+
+    <div class="navbar__actions">
+        <span class="navbar__timestamp" id="last-updated"></span>
+        <a href="https://www.overleaf.com" target="_blank" rel="noopener" class="btn-overlay" id="btn-open-overleaf">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 3H3v10h10v-3"/>
+                <path d="M9 2h5v5"/>
+                <path d="M14 2L7 9"/>
+            </svg>
+            Open Overleaf
+        </a>
+    </div>
+</nav>
+
+<!-- ========== MAIN ========== -->
+<main class="main">
+
+    <!-- ===== SECTION: Overview ===== -->
+    <section class="section" id="section-overview">
+        <div class="section__header">
+            <h1 class="section__title">Platform Overview</h1>
+            <span class="section__subtitle">Executive summary of platform metrics</span>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card metric-card--blue fade-in">
+                <div class="metric-card__label">Total Users</div>
+                <div class="metric-card__value" id="ov-total-users">
+                    <div class="loading-skeleton" style="height:36px;width:60px"></div>
+                </div>
+                <div class="metric-card__detail">Registered accounts</div>
+            </div>
+
+            <div class="metric-card metric-card--green fade-in">
+                <div class="metric-card__label">Total Projects</div>
+                <div class="metric-card__value" id="ov-total-projects">
+                    <div class="loading-skeleton" style="height:36px;width:60px"></div>
+                </div>
+                <div class="metric-card__detail">All LaTeX projects</div>
+            </div>
+
+            <div class="metric-card metric-card--teal fade-in">
+                <div class="metric-card__label">Active Users (30d)</div>
+                <div class="metric-card__value" id="ov-active-users">
+                    <div class="loading-skeleton" style="height:36px;width:60px"></div>
+                </div>
+                <div class="metric-card__detail">Last 30 days</div>
+            </div>
+
+            <div class="metric-card metric-card--amber fade-in">
+                <div class="metric-card__label">Active Projects (30d)</div>
+                <div class="metric-card__value" id="ov-active-projects">
+                    <div class="loading-skeleton" style="height:36px;width:60px"></div>
+                </div>
+                <div class="metric-card__detail">Updated in last 30 days</div>
+            </div>
+
+            <div class="metric-card metric-card--purple fade-in">
+                <div class="metric-card__label">Logged-In Users</div>
+                <div class="metric-card__value" id="ov-logged-in">
+                    <div class="loading-skeleton" style="height:36px;width:60px"></div>
+                </div>
+                <div class="metric-card__detail">Current sessions</div>
+            </div>
+
+            <div class="metric-card metric-card--red fade-in">
+                <div class="metric-card__label">Active Sessions</div>
+                <div class="metric-card__value" id="ov-sessions">
+                    <div class="loading-skeleton" style="height:36px;width:60px"></div>
+                </div>
+                <div class="metric-card__detail">Redis session count</div>
+            </div>
+
+            <div class="metric-card metric-card--blue fade-in">
+                <div class="metric-card__label">Users with Projects</div>
+                <div class="metric-card__value" id="ov-users-with-projects">
+                    <div class="loading-skeleton" style="height:36px;width:60px"></div>
+                </div>
+                <div class="metric-card__detail">Project owners</div>
+            </div>
+
+            <div class="metric-card metric-card--green fade-in">
+                <div class="metric-card__label">Users with Edits</div>
+                <div class="metric-card__value" id="ov-users-with-edits">
+                    <div class="loading-skeleton" style="height:36px;width:60px"></div>
+                </div>
+                <div class="metric-card__detail">Made at least one edit</div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ===== SECTION: Usage Analytics ===== -->
+    <section class="section" id="section-usage">
+        <div class="section__header">
+            <h2 class="section__title">Usage Analytics</h2>
+            <span class="section__subtitle">User registration, activity, and login patterns</span>
+        </div>
+
+        <!-- User Summary Metrics -->
+        <div class="metrics-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: var(--space-lg);">
+            <div class="metric-card metric-card--blue fade-in">
+                <div class="metric-card__label">Total Users</div>
+                <div class="metric-card__value" id="us-total">—</div>
+                <div class="metric-card__detail">All registered users</div>
+            </div>
+            <div class="metric-card metric-card--purple fade-in">
+                <div class="metric-card__label">Admin Users</div>
+                <div class="metric-card__value" id="us-admin">—</div>
+                <div class="metric-card__detail">Administrator accounts</div>
+            </div>
+            <div class="metric-card metric-card--red fade-in">
+                <div class="metric-card__label">Never Logged In</div>
+                <div class="metric-card__value" id="us-never">—</div>
+                <div class="metric-card__detail">Registered but inactive</div>
+            </div>
+        </div>
+
+        <!-- Activity + Login Stats -->
+        <div class="metrics-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: var(--space-xl);">
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Active (7d)</div>
+                <div class="metric-card__value" id="ua-7d">—</div>
+            </div>
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Active (30d)</div>
+                <div class="metric-card__value" id="ua-30d">—</div>
+            </div>
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Active (90d)</div>
+                <div class="metric-card__value" id="ua-90d">—</div>
+            </div>
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Avg Login Count</div>
+                <div class="metric-card__value" id="ls-avg">—</div>
+            </div>
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Max Login Count</div>
+                <div class="metric-card__value" id="ls-max">—</div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="chart-grid">
+            <div class="chart-card">
+                <div class="chart-card__header">
+                    <span class="chart-card__title">User Registration Growth</span>
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-user-growth-freq="day">Day</button>
+                        <button class="filter-btn" data-user-growth-freq="week">Week</button>
+                        <button class="filter-btn" data-user-growth-freq="month">Month</button>
+                        <button class="filter-btn" data-user-growth-freq="year">Year</button>
+                    </div>
+                </div>
+                <div style="height:280px;">
+                    <canvas id="chart-user-growth" class="chart-card__canvas"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-card__header">
+                    <span class="chart-card__title">User Activity Distribution</span>
+                </div>
+                <div style="height:280px;">
+                    <canvas id="chart-user-activity" class="chart-card__canvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Table -->
+        <div class="table-card" style="margin-top: var(--space-lg);">
+            <div class="table-card__header">
+                <span class="table-card__title">User Directory</span>
+                <span class="table-card__count" id="user-count">Loading...</span>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Designation</th>
+                            <th>Section / Division / Group</th>
+                            <th style="text-align:right">Logins</th>
+                            <th>Signup Date</th>
+                            <th>Last Active</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body">
+                        <tr><td colspan="9" class="empty-state">Loading user data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ===== SECTION: Projects ===== -->
+    <section class="section" id="section-projects">
+        <div class="section__header">
+            <h2 class="section__title">Project Analytics</h2>
+            <span class="section__subtitle">Project distribution, activity, and growth</span>
+        </div>
+
+        <!-- Project Summary -->
+        <div class="metrics-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: var(--space-lg);">
+            <div class="metric-card metric-card--green fade-in">
+                <div class="metric-card__label">Total Projects</div>
+                <div class="metric-card__value" id="ps-total">—</div>
+            </div>
+            <div class="metric-card metric-card--blue fade-in">
+                <div class="metric-card__label">Public Projects</div>
+                <div class="metric-card__value" id="ps-public">—</div>
+            </div>
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Private Projects</div>
+                <div class="metric-card__value" id="ps-private">—</div>
+            </div>
+        </div>
+
+        <!-- Project Activity -->
+        <div class="metrics-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: var(--space-xl);">
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Updated (7d)</div>
+                <div class="metric-card__value" id="pa-updated-7d">—</div>
+            </div>
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Updated (30d)</div>
+                <div class="metric-card__value" id="pa-updated-30d">—</div>
+            </div>
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Opened (30d)</div>
+                <div class="metric-card__value" id="pa-opened-30d">—</div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="chart-grid">
+            <div class="chart-card">
+                <div class="chart-card__header">
+                    <span class="chart-card__title">Project Creation Growth</span>
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-project-growth-freq="day">Day</button>
+                        <button class="filter-btn" data-project-growth-freq="week">Week</button>
+                        <button class="filter-btn" data-project-growth-freq="month">Month</button>
+                        <button class="filter-btn" data-project-growth-freq="year">Year</button>
+                    </div>
+                </div>
+                <div style="height:280px;">
+                    <canvas id="chart-project-growth" class="chart-card__canvas"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-card__header">
+                    <span class="chart-card__title">Project Visibility</span>
+                </div>
+                <div style="height:280px;">
+                    <canvas id="chart-project-visibility" class="chart-card__canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ===== SECTION: Storage / Content ===== -->
+    <section class="section" id="section-storage">
+        <div class="section__header">
+            <h2 class="section__title">Content & Storage</h2>
+            <span class="section__subtitle">Document counts, file types, and collaboration metrics</span>
+        </div>
+
+        <!-- Content Metrics -->
+        <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: var(--space-xl);">
+            <div class="metric-card metric-card--blue fade-in">
+                <div class="metric-card__label">Total Documents</div>
+                <div class="metric-card__value" id="cs-total-docs">—</div>
+                <div class="metric-card__detail">LaTeX source files</div>
+            </div>
+            <div class="metric-card metric-card--amber fade-in">
+                <div class="metric-card__label">Uploaded Files</div>
+                <div class="metric-card__value" id="cs-total-files">—</div>
+                <div class="metric-card__detail">Images, PDFs, assets</div>
+            </div>
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Avg Docs / Project</div>
+                <div class="metric-card__value" id="cs-avg-docs">—</div>
+            </div>
+            <div class="metric-card fade-in">
+                <div class="metric-card__label">Avg Files / Project</div>
+                <div class="metric-card__value" id="cs-avg-files">—</div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="chart-grid">
+            <div class="chart-card">
+                <div class="chart-card__header">
+                    <span class="chart-card__title">File Type Distribution</span>
+                </div>
+                <div style="height:280px;">
+                    <canvas id="chart-file-types" class="chart-card__canvas"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-card__header">
+                    <span class="chart-card__title">Collaboration Distribution</span>
+                </div>
+                <div style="height:280px;">
+                    <canvas id="chart-collaboration" class="chart-card__canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ===== SECTION: Systems ===== -->
+    <section class="section" id="section-systems">
+        <div class="section__header">
+            <h2 class="section__title">Infrastructure</h2>
+            <span class="section__subtitle">Connected data stores and services</span>
+        </div>
+
+        <div class="infra-grid">
+            <!-- MongoDB -->
+            <div class="infra-card fade-in">
+                <div class="infra-card__header">
+                    <div class="infra-card__icon infra-card__icon--mongo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    </div>
+                    <div>
+                        <div class="infra-card__name">MongoDB</div>
+                        <div class="infra-card__host" id="sys-mongo-host">—</div>
+                    </div>
+                </div>
+                <div class="infra-card__details">
+                    <div class="infra-detail">
+                        <span class="infra-detail__label">Status</span>
+                        <span class="infra-detail__value"><span class="status-dot status-dot--online"></span>Connected</span>
+                    </div>
+                    <div class="infra-detail">
+                        <span class="infra-detail__label">Database</span>
+                        <span class="infra-detail__value">sharelatex</span>
+                    </div>
+                    <div class="infra-detail">
+                        <span class="infra-detail__label">Collections</span>
+                        <span class="infra-detail__value">users, projects</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Redis -->
+            <div class="infra-card fade-in">
+                <div class="infra-card__header">
+                    <div class="infra-card__icon infra-card__icon--redis">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.87L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"/></svg>
+                    </div>
+                    <div>
+                        <div class="infra-card__name">Redis</div>
+                        <div class="infra-card__host" id="sys-redis-host">—</div>
+                    </div>
+                </div>
+                <div class="infra-card__details">
+                    <div class="infra-detail">
+                        <span class="infra-detail__label">Status</span>
+                        <span class="infra-detail__value"><span class="status-dot status-dot--online"></span>Connected</span>
+                    </div>
+                    <div class="infra-detail">
+                        <span class="infra-detail__label">Purpose</span>
+                        <span class="infra-detail__value">Session Management</span>
+                    </div>
+                    <div class="infra-detail">
+                        <span class="infra-detail__label">Key Pattern</span>
+                        <span class="infra-detail__value">sess:*</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MySQL -->
+            <div class="infra-card fade-in">
+                <div class="infra-card__header">
+                    <div class="infra-card__icon infra-card__icon--mysql">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zm-6-1h2V9h-2.5L12 11l-1.5-2H8v8h2v-5l2 2 2-2v5z"/></svg>
+                    </div>
+                    <div>
+                        <div class="infra-card__name">MySQL</div>
+                        <div class="infra-card__host" id="sys-mysql-host">—</div>
+                    </div>
+                </div>
+                <div class="infra-card__details">
+                    <div class="infra-detail">
+                        <span class="infra-detail__label">Status</span>
+                        <span class="infra-detail__value"><span class="status-dot status-dot--online"></span>Connected</span>
+                    </div>
+                    <div class="infra-detail">
+                        <span class="infra-detail__label">Database</span>
+                        <span class="infra-detail__value" id="sys-mysql-db">—</span>
+                    </div>
+                    <div class="infra-detail">
+                        <span class="infra-detail__label">Table</span>
+                        <span class="infra-detail__value">employeeDetails</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+    LaTeX Analytics &middot; CITG, VSSC &middot; Internal Use Only
+</footer>
+
+<!-- Application Script -->
+<script src="/static/app.js"></script>
+
+</body>
+</html>
