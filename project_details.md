@@ -58,7 +58,8 @@ LatexDash/
 │   └── packages/                   # Python virtual environment
 │
 ├── frontend/                       # *** ALL CHANGES ARE HERE ***
-│   ├── index.html                  # Single-page dashboard
+│   ├── index.html                  # Single-page User Dashboard (no user table)
+│   ├── admin.html                  # Single-page Admin Dashboard (includes User Directory table)
 │   ├── assets/
 │   │   └── isrologo.svg            # ISRO logo (original)
 │   └── static/

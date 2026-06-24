@@ -25,9 +25,8 @@ python -m http.server 5001
 
 ### 3. Open the dashboard
 
-```
-http://localhost:5001
-```
+- **User Dashboard**: `http://localhost:5001`
+- **Admin Console** (includes User Directory table): `http://localhost:5001/admin.html`
 
 ### 4. Stop the server
 
@@ -63,9 +62,9 @@ python3 -m http.server 5001
 
 ### 4. Open the dashboard
 
-```
-http://<server-ip>:5001
-```
+- **User Dashboard**: `http://<server-ip>:5001`
+- **Admin Console** (includes User Directory table): `http://<server-ip>:5001/admin.html`
+
 
 ### 5. (Optional) Run as a background service
 

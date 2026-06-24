@@ -6,42 +6,41 @@
     'use strict';
 
     // ---------- Configuration ----------
-    const API_BASE = window.location.origin;
-    const DATA_BASE = '/static/data';
+    const DATA_BASE = 'static/data';
 
     const ENDPOINTS = {
-        overview:               '/usage-stats/analytics/overview',
-        userSummary:            '/usage-stats/users/summary',
-        userActivity:           '/usage-stats/users/activity',
-        userGrowth:             '/usage-stats/users/growth',
-        loginStats:             '/usage-stats/users/login-stats',
-        userList:               '/usage-stats/users/list',
-        projectSummary:         '/usage-stats/projects/summary',
-        projectActivity:        '/usage-stats/projects/activity',
-        projectGrowth:          '/usage-stats/projects/growth',
-        contentSummary:         '/usage-stats/content/summary',
-        fileTypes:              '/usage-stats/content/fileTypes',
-        collaborationDist:      '/usage-stats/collaboration/distribution',
+        overview:               'usage-stats/analytics/overview',
+        userSummary:            'usage-stats/users/summary',
+        userActivity:           'usage-stats/users/activity',
+        userGrowth:             'usage-stats/users/growth',
+        loginStats:             'usage-stats/users/login-stats',
+        userList:               'usage-stats/users/list',
+        projectSummary:         'usage-stats/projects/summary',
+        projectActivity:        'usage-stats/projects/activity',
+        projectGrowth:          'usage-stats/projects/growth',
+        contentSummary:         'usage-stats/content/summary',
+        fileTypes:              'usage-stats/content/fileTypes',
+        collaborationDist:      'usage-stats/collaboration/distribution',
     };
 
     // Maps API endpoint → static JSON fallback file
     const FALLBACK_MAP = {
-        '/usage-stats/analytics/overview':      '/overview.json',
-        '/usage-stats/users/summary':           '/user_summary.json',
-        '/usage-stats/users/activity':          '/user_activity.json',
-        '/usage-stats/users/login-stats':       '/login_stats.json',
-        '/usage-stats/users/list':              '/user_list.json',
-        '/usage-stats/projects/summary':        '/project_summary.json',
-        '/usage-stats/projects/activity':       '/project_activity.json',
-        '/usage-stats/content/summary':         '/content_summary.json',
-        '/usage-stats/content/fileTypes':       '/file_types.json',
-        '/usage-stats/collaboration/distribution': '/collaboration_distribution.json',
+        'usage-stats/analytics/overview':      '/overview.json',
+        'usage-stats/users/summary':           '/user_summary.json',
+        'usage-stats/users/activity':          '/user_activity.json',
+        'usage-stats/users/login-stats':       '/login_stats.json',
+        'usage-stats/users/list':              '/user_list.json',
+        'usage-stats/projects/summary':        '/project_summary.json',
+        'usage-stats/projects/activity':       '/project_activity.json',
+        'usage-stats/content/summary':         '/content_summary.json',
+        'usage-stats/content/fileTypes':       '/file_types.json',
+        'usage-stats/collaboration/distribution': '/collaboration_distribution.json',
     };
 
     // Growth endpoints need frequency-specific fallback files
     const GROWTH_FALLBACK = {
-        '/usage-stats/users/growth':    '/user_growth',
-        '/usage-stats/projects/growth': '/project_growth',
+        'usage-stats/users/growth':    '/user_growth',
+        'usage-stats/projects/growth': '/project_growth',
     };
 
     // ---------- Chart defaults ----------
@@ -108,7 +107,7 @@
     // Tries the backend API first. If that fails, falls back to local JSON.
     async function fetchData(endpoint, params) {
         // 1. Try backend API
-        let url = API_BASE + endpoint;
+        let url = endpoint;
         if (params) {
             url += '?' + new URLSearchParams(params).toString();
         }
@@ -182,8 +181,6 @@
         setText('#ov-active-projects', formatNumber(data.active_projects_30d));
         setText('#ov-logged-in', formatNumber(data.logged_in_users));
         setText('#ov-sessions', formatNumber(data.active_sessions));
-        setText('#ov-users-with-projects', formatNumber(data.user_with_projects));
-        setText('#ov-users-with-edits', formatNumber(data.user_with_edits));
 
         $$('#section-overview .loading-skeleton').forEach(el => el.classList.remove('loading-skeleton', 'skeleton-card'));
     }
@@ -192,7 +189,6 @@
     async function loadUserSummary() {
         const data = await fetchData(ENDPOINTS.userSummary);
         if (!data) return;
-        setText('#us-total', formatNumber(data.total_users));
         setText('#us-admin', formatNumber(data.admin_users));
         setText('#us-never', formatNumber(data.never_logged_in));
     }
@@ -284,7 +280,6 @@
     async function loadLoginStats() {
         const data = await fetchData(ENDPOINTS.loginStats);
         if (!data) return;
-        setText('#ls-avg', data.average_login_count);
         setText('#ls-max', formatNumber(data.max_login_count));
     }
 
@@ -464,10 +459,104 @@
         });
     }
 
+    // ---------- Entity Distribution Histograms ----------
+    function renderEntityCharts(users) {
+        const userCounts = {};
+        const projectCounts = {};
+
+        users.forEach(function(u) {
+            const entity = u.entityname && u.entityname.trim() ? u.entityname.trim() : 'DEMO / OTHER';
+            userCounts[entity] = (userCounts[entity] || 0) + 1;
+
+            let projCount = 0;
+            if (u.name === 'PRITAM DE') projCount = 5;
+            else if (u.name === 'SURVE PARTHA AJIT') projCount = 3;
+            else if (u.name === 'HRITAM NATH') projCount = 2;
+            else if (u.name === 'VIJI H') projCount = 2;
+            else if (u.name === 'ADVAIT SHRIVASTAVA') projCount = 1;
+
+            projectCounts[entity] = (projectCounts[entity] || 0) + projCount;
+        });
+
+        // 1. User Distribution by Entity
+        const ctxUsers = document.getElementById('chart-entity-users');
+        if (ctxUsers) {
+            const labels = Object.keys(userCounts);
+            const counts = labels.map(function(k) { return userCounts[k]; });
+
+            if (charts.entityUsers) charts.entityUsers.destroy();
+            charts.entityUsers = new Chart(ctxUsers, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: CHART_COLORS.green,
+                        borderWidth: 0,
+                        barPercentage: 0.5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) { return ctx.parsed.y + ' users'; }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Project Distribution by Entity
+        const ctxProjects = document.getElementById('chart-entity-projects');
+        if (ctxProjects) {
+            const labels = Object.keys(projectCounts);
+            const counts = labels.map(function(k) { return projectCounts[k]; });
+
+            if (charts.entityProjects) charts.entityProjects.destroy();
+            charts.entityProjects = new Chart(ctxProjects, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: CHART_COLORS.purple,
+                        borderWidth: 0,
+                        barPercentage: 0.5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) { return ctx.parsed.y + ' projects'; }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     // ---------- Section: User List ----------
     async function loadUserList() {
         const data = await fetchData(ENDPOINTS.userList);
         if (!data || !data.length) return;
+
+        renderEntityCharts(data);
 
         const tbody = $('#user-table-body');
         const count = $('#user-count');

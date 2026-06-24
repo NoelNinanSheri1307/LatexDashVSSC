@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="LaTeX Analytics CITG — Usage statistics, project metrics, and infrastructure monitoring for the collaborative LaTeX platform.">
-    <title>LaTeX Analytics — CITG</title>
+    <title>LaTeX Analytics — CITG (Admin Console)</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,6 +24,7 @@
     <a href="#" class="navbar__brand">
         <img src="static/assets/isrologo.svg" alt="ISRO" class="navbar__brand-logo">
         LaTeX Analytics CITG
+        <span class="admin-badge">Admin</span>
         <span class="data-source-badge" id="data-source-badge">Checking...</span>
     </a>
 
@@ -187,6 +188,34 @@
                 </div>
             </div>
         </div>
+
+        <!-- User Table -->
+        <div class="table-card" style="margin-top: var(--space-lg);">
+            <div class="table-card__header">
+                <span class="table-card__title">User Directory</span>
+                <span class="table-card__count" id="user-count">Loading...</span>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Designation</th>
+                            <th>Section / Division / Group</th>
+                            <th style="text-align:right">Logins</th>
+                            <th>Signup Date</th>
+                            <th>Last Active</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body">
+                        <tr><td colspan="9" class="empty-state">Loading user data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </section>
 
     <div class="section-divider"></div>
@@ -268,6 +297,7 @@
     </section>
 
     <div class="section-divider"></div>
+
     <!-- ===== SECTION: Storage / Content ===== -->
     <section class="section" id="section-storage" style="--section-color: var(--accent-amber)">
         <div class="section__header">
