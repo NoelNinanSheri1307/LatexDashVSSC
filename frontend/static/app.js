@@ -63,7 +63,7 @@
 
     Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
     Chart.defaults.font.size = 12;
-    Chart.defaults.color = '#8892a4';
+    Chart.defaults.color = '#000000';
     Chart.defaults.plugins.legend.display = false;
     Chart.defaults.plugins.tooltip.backgroundColor = '#1a1d21';
     Chart.defaults.plugins.tooltip.titleFont = { size: 12, weight: '600' };
